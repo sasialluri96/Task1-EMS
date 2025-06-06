@@ -32,11 +32,11 @@ public class SecurityConfig1 {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(HttpMethod.POST,"/users/register").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/**").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/**").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/**").authenticated()
-                                .requestMatchers(HttpMethod.GET, "/**").permitAll()
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 )
                 .httpBasic(httpBasic -> httpBasic
                         .authenticationEntryPoint(authenticationEntryPoint)
