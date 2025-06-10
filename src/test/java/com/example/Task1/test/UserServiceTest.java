@@ -44,7 +44,6 @@ public class UserServiceTest {
         dto.setUsername("john");
         dto.setPassword("");
         dto.setRoles("ROLE_USER");
-
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> userService.saveUser(dto));
         assertEquals("Password is required", ex.getMessage());
     }

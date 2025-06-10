@@ -22,13 +22,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(EmployeeController.class)
 public class EmployeeControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
     @MockBean
     private EmployeeService employeeService;
+
 
     @Test
     void testCreateEmployee_Success() throws Exception {
@@ -47,10 +47,10 @@ public class EmployeeControllerTest {
     @Test
     void testCreateEmployee_NullName() throws Exception {
         EmployeeDTO employeeDTO = new EmployeeDTO(null, "HR");
-
         mockMvc.perform(post("/employees/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeDTO)))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
     @Test
@@ -59,11 +59,11 @@ public class EmployeeControllerTest {
 
         when(employeeService.saveEmployee(any(EmployeeDTO.class)))
                 .thenThrow(new ResourceNotFoundException("Employee already exists"));
-
         mockMvc.perform(post("/employees/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeDTO)))
-                .andExpect(status().isNotFound()) // or whatever status you're returning for duplicates
+                .andDo(print())
+                .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Employee already exists")));
     }
 
@@ -78,6 +78,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(put("/employees/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeDTO)))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Jane"))
                 .andExpect(jsonPath("$.department").value("Marketing"));
@@ -89,6 +90,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(put("/employees/update/2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeDTO)))
+                .andDo(print())
                 .andExpect(status().isNotFound());
     }
     @Test
@@ -97,6 +99,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(put("/employees/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeDTO)))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -105,6 +108,7 @@ public class EmployeeControllerTest {
     @Test
     void testDeleteEmployee_Success() throws Exception {
         mockMvc.perform(delete("/employees/delete/1"))
+                .andDo(print())
                 .andExpect(status().isOk());
         verify(employeeService, times(1)).deleteEmployee(1);
     }
@@ -112,12 +116,14 @@ public class EmployeeControllerTest {
     void testDeleteEmployee_RecordNotFound() throws Exception {
         doThrow(new ResourceNotFoundException("Record not present")).when(employeeService).deleteEmployee(2);
         mockMvc.perform(delete("/employees/delete/2"))
+                .andDo(print())
                 .andExpect(status().isNotFound());
     }
     @Test
     void testDeleteEmployee_InvalidId() throws Exception {
         doThrow(new IllegalArgumentException("Invalid employee id")).when(employeeService).deleteEmployee(-1);
         mockMvc.perform(delete("/employees/delete/-1"))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -129,6 +135,7 @@ public class EmployeeControllerTest {
         employee.setId(1);
         when(employeeService.getEmployeeById(1)).thenReturn(employee);
         mockMvc.perform(get("/employees/1"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("John"))
                 .andExpect(jsonPath("$.department").value("HR"));
@@ -137,12 +144,14 @@ public class EmployeeControllerTest {
     void testGetEmployeeById_NotFound() throws Exception {
         when(employeeService.getEmployeeById(2)).thenThrow(new ResourceNotFoundException("Record not present"));
         mockMvc.perform(get("/employees/2"))
+                .andDo(print())
                 .andExpect(status().isNotFound());
     }
     @Test
     void testGetEmployeeById_InvalidId() throws Exception {
         when(employeeService.getEmployeeById(-1)).thenThrow(new IllegalArgumentException("Invalid employee id"));
         mockMvc.perform(get("/employees/-1"))
+                .andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -159,6 +168,7 @@ public class EmployeeControllerTest {
         employees.add(employee2);
         when(employeeService.getEmployeesByDepartment("HR")).thenReturn(employees);
         mockMvc.perform(get("/employees/department/HR"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
@@ -166,6 +176,7 @@ public class EmployeeControllerTest {
     void testGetEmployeesByDepartment_NotFound() throws Exception {
         when(employeeService.getEmployeesByDepartment("Finance")).thenReturn(new ArrayList<>());
         mockMvc.perform(get("/employees/department/Finance"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
@@ -190,6 +201,7 @@ public class EmployeeControllerTest {
         employees.add(employee2);
         when(employeeService.getAllEmployees()).thenReturn(employees);
         mockMvc.perform(get("/employees/all"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
@@ -197,6 +209,7 @@ public class EmployeeControllerTest {
     void testGetAllEmployees_EmptyList() throws Exception {
         when(employeeService.getAllEmployees()).thenReturn(new ArrayList<>());
         mockMvc.perform(get("/employees/all"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }
@@ -204,6 +217,7 @@ public class EmployeeControllerTest {
     void testGetAllEmployees_Exception() throws Exception {
         when(employeeService.getAllEmployees()).thenThrow(new RuntimeException("Database error"));
         mockMvc.perform(get("/employees/all"))
+                .andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 }

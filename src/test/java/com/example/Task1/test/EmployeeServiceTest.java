@@ -28,6 +28,7 @@ public class EmployeeServiceTest {
         validDto = new EmployeeDTO();
         validDto.setName("John");
         validDto.setDepartment("HR");
+
     }
 
 
@@ -53,6 +54,7 @@ public class EmployeeServiceTest {
                 .thenReturn(Optional.of(sampleEmployee));
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
                 () -> employeeService.saveEmployee(validDto));
+        System.out.println("Exception Message: " + ex.getMessage());
         assertEquals("Employee already exists", ex.getMessage());
     }
 
@@ -72,6 +74,7 @@ public class EmployeeServiceTest {
         when(employeeRepo.findById(2)).thenReturn(Optional.empty());
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
                 () -> employeeService.updateEmployee(2, validDto));
+        System.out.println("Exception Message: " + ex.getMessage());
         assertEquals("Record not present", ex.getMessage());
     }
     @Test
@@ -89,9 +92,7 @@ public class EmployeeServiceTest {
     void testDeleteEmployee_Success() {
         when(employeeRepo.existsById(1)).thenReturn(true);
         doNothing().when(employeeRepo).deleteById(1);
-
         employeeService.deleteEmployee(1);
-
         verify(employeeRepo, times(1)).deleteById(1);
     }
     @Test
@@ -99,6 +100,7 @@ public class EmployeeServiceTest {
         when(employeeRepo.existsById(2)).thenReturn(false);
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
                 () -> employeeService.deleteEmployee(2));
+        System.out.println("Exception Message: " + ex.getMessage());
         assertEquals("Record not present", ex.getMessage());
     }
     @Test
@@ -121,14 +123,15 @@ public class EmployeeServiceTest {
         when(employeeRepo.findById(2)).thenReturn(Optional.empty());
         ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class,
                 () -> employeeService.getEmployeeById(2));
+        System.out.println("Exception Message: " + ex.getMessage());
         assertEquals("Record not present", ex.getMessage());
     }
     @Test
     void testGetEmployeeById_InvalidId() {
         when(employeeRepo.findById(-1)).thenThrow(new IllegalArgumentException("Invalid employee id"));
-
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> employeeService.getEmployeeById(-1));
+        System.out.println("Exception Message: " + ex.getMessage());
         assertEquals("Invalid employee id", ex.getMessage());
     }
 
@@ -152,6 +155,7 @@ public class EmployeeServiceTest {
     void testGetEmployeesByDepartment_EmptyDepartment() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> employeeService.getEmployeesByDepartment(""));
+        System.out.println("Exception Message: " + ex.getMessage());
         assertEquals("Department cannot be empty", ex.getMessage());
     }
 
@@ -160,9 +164,7 @@ public class EmployeeServiceTest {
     @Test
     void testGetAllEmployees_Success() {
         when(employeeRepo.findAll()).thenReturn(List.of(sampleEmployee));
-
         List<Employee> employees = employeeService.getAllEmployees();
-
         assertEquals(1, employees.size());
         assertEquals("John", employees.get(0).getName());
     }
@@ -170,18 +172,16 @@ public class EmployeeServiceTest {
     @Test
     void testGetAllEmployees_EmptyList() {
         when(employeeRepo.findAll()).thenReturn(Collections.emptyList());
-
         List<Employee> employees = employeeService.getAllEmployees();
-
         assertTrue(employees.isEmpty());
     }
 
     @Test
     void testGetAllEmployees_Exception() {
         when(employeeRepo.findAll()).thenThrow(new RuntimeException("Database error"));
-
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> employeeService.getAllEmployees());
+        System.out.println("Exception Message: " + ex.getMessage());
         assertEquals("Database error", ex.getMessage());
     }
 }
